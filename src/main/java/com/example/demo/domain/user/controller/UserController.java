@@ -32,4 +32,6 @@ public class UserController {
         userService.updateProfile(uuid, requestDto);
         return ResponseEntity.ok().build(); // '성공'을 의미하는 200 상태 코드 반환
     }
+
+
 }

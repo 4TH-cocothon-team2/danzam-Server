@@ -32,8 +32,10 @@ public class IntakeService {
 
         // 3. IntakeRecord 객체를 완성
         IntakeRecord intake = IntakeRecord.builder()
-                .userId(user) // 어떤 사용자의 기록인지 연결
-                .name(request.name()) // DTO의 필드 이름을 확인하고 맞춰주세요
+                .user(user) // 어떤 사용자의 기록인지 연결
+                .name(request.name())
+                .count(request.count())
+                .capacity(request.capacity())// DTO의 필드 이름을 확인하고 맞춰주세요
                 .caffeine_mg(request.caffeine_mg())
                 .intakeAt(request.intakeAt())
                 .build(); // builder를 마무리하는 build() 호출
@@ -58,7 +60,7 @@ public class IntakeService {
     }
 
     @Transactional
-    public IntakeDto getIntakeDetail(String uuid, String intakeId) {
+    public IntakeDto getIntakeDetail(String uuid, Long intakeId) {
         User user = findUserByUuid(uuid);
         IntakeRecord intake = intakeRepository.findByIntakeIdAndUser(intakeId, user)
                 .orElseThrow(()-> new IllegalArgumentException("해당 id의 섭취 기록이 없습니다"));
@@ -67,7 +69,7 @@ public class IntakeService {
     }
 
     @Transactional
-    public void modIntake(String uuid, String intakeId, IntakeRequest request) {
+    public void modIntake(String uuid, Long intakeId, IntakeRequest request) {
         User user = findUserByUuid(uuid);
         IntakeRecord intake = intakeRepository.findByIntakeIdAndUser(intakeId, user)
                 .orElseThrow(()-> new IllegalArgumentException("해당 기록이 없습니다"));
@@ -77,7 +79,7 @@ public class IntakeService {
 
     //삭제
     @Transactional
-    public void deleteIntake(String uuid, String intakeId) {
+    public void deleteIntake(String uuid, Long intakeId) {
         User user = findUserByUuid(uuid);
         // 섭취 기록 ID와 사용자 정보가 모두 일치하는 기록을 찾습니다.
         IntakeRecord intake = intakeRepository.findByIntakeIdAndUser(intakeId, user)

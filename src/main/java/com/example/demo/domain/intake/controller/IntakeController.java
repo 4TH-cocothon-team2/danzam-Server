@@ -35,7 +35,7 @@ public class IntakeController {
     }
     //상세 조회
     @GetMapping("/{intakeId}")
-    public ResponseEntity<IntakeDto> getIntakeDetail(@RequestAttribute("guestUuid") String uuid, @PathVariable String intakeId) {
+    public ResponseEntity<IntakeDto> getIntakeDetail(@RequestAttribute("guestUuid") String uuid, @PathVariable Long intakeId) {
         IntakeDto intakeDetail = intakeService.getIntakeDetail(uuid, intakeId);
 
         return ResponseEntity.ok(intakeDetail);
@@ -43,7 +43,7 @@ public class IntakeController {
 
     //기록 수정
     @PatchMapping("/{intakeId}")
-    public ResponseEntity<Void> modIntake(@RequestAttribute("guestUuid") String uuid, @RequestBody IntakeRequest request, @PathVariable String intakeId) {
+    public ResponseEntity<Void> modIntake(@RequestAttribute("guestUuid") String uuid, @RequestBody IntakeRequest request, @PathVariable Long intakeId) {
         intakeService.modIntake(uuid, intakeId, request);
         return ResponseEntity.ok().build();
     }
@@ -51,7 +51,7 @@ public class IntakeController {
     //삭제
     @DeleteMapping("/{intakeId}")
     public ResponseEntity<Void> deleteIntake(@RequestAttribute("guestUuid") String uuid,
-                                             @PathVariable String intakeId) {
+                                             @PathVariable Long intakeId) {
         intakeService.deleteIntake(uuid, intakeId);
         return ResponseEntity.noContent().build();
     }
