@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app1234
+      POSTGRES_DB: appdb
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U app -d appdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build: .
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/appdb
+      DB_USERNAME: app
+      DB_PASSWORD: app1234
+      CORS_ALLOWED_ORIGINS: "https://your-web-domain,https://your-cloudfront" # 웹이면 넣기, 앱이면 상관없음
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  dbdata:
