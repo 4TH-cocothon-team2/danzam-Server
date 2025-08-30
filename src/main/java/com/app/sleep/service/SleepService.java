@@ -15,9 +15,11 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -116,7 +118,7 @@ public class SleepService {
             if (i.getIntakeAt().isAfter(t)) continue;
             double hours = Duration.between(i.getIntakeAt(), t).toMinutes() / 60.0;
             // 필드명이 caffeine_mg이면 getCaffeine_mg()로 바꾸기
-            mg += i.getCaffeineMg() * Math.exp(-k * hours);
+            mg += i.getCaffeine_mg() * Math.exp(-k * hours);
         }
         return mg;
     }
