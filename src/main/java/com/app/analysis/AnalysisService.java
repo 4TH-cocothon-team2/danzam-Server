@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -26,7 +25,7 @@ import java.util.*;
 public class AnalysisService {
 
     // JPA 레포: 사용자/섭취 기록 조회
-    private final UserProfileRepository userRepo;
+    private final UserRepository userRepo;
     private final IntakeRepository intakeRepo;
 
     // OpenAI 호출 서비스 (JSON만 반환하도록 프롬프트)
@@ -37,13 +36,13 @@ public class AnalysisService {
         LocalDate date = (dateOpt == null) ? LocalDate.now() : dateOpt;
 
         // 사용자 정보 로드 (없으면 400 에러)
-        UserProfile user = userRepo.findById(userPk)
+        User user = userRepo.findById(userPk)
                 .orElseThrow(() -> new IllegalArgumentException("userPk not found"));
 
         //당일 00:00 - 익일 00:00 구간 섭취 기록 로드
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.plusDays(1).atStartOfDay();
-        List<Intake> intakes = intakeRepo.findByUserPkAndTakenAtBetween(userPk, start, end);
+        List<Intake> intakes = intakeRepo.findByUserAndIntakeAtBetween(user, start, end);
 
         // 1) GPT로 계산 시도
         String json = gpt.computeByGpt(user, intakes, date);
@@ -93,7 +92,7 @@ public class AnalysisService {
     private static final int STEP_MINUTES = 10;   // 1, 5, 10 등 네가 원하는 간격
     private static final double THRESHOLD_MG = 5.0;
 
-    private AnalysisResponse fallbackLocalCalc(UserProfile u, List<Intake> xs, LocalDate date) {
+    private AnalysisResponse fallbackLocalCalc(User u, List<Intake> xs, LocalDate date) {
         double half = adjustedHalfLife(u);
         LocalDateTime now = LocalDateTime.now();
 
@@ -103,7 +102,7 @@ public class AnalysisService {
 
         // ✅ '현재 이전(<= now)' 중 가장 늦은 섭취시각을 시리즈 시작으로
         Optional<LocalDateTime> lastPastIntakeOpt = xs.stream()
-                .map(Intake::getTakenAt)
+                .map(Intake::getIntakeAt)
                 .filter(t -> !t.isAfter(now))           // now 이전(같음 포함)만
                 .max(Comparator.naturalOrder());
 
@@ -116,7 +115,7 @@ public class AnalysisService {
         for (LocalDateTime t = from; !t.isAfter(hardEnd); t = t.plusMinutes(STEP_MINUTES)) {
             double mg = 0.0;
             for (Intake in : xs) {
-                mg += decay(in.getMg(), in.getTakenAt(), t, half);
+                mg += decay(in.getCaffeine_mg(), in.getIntakeAt(), t, half);
             }
             series.add(new AnalysisResponse.Point(t, round1(mg)));
         }
@@ -124,11 +123,11 @@ public class AnalysisService {
 
         // now 시점 값 계산
         double nowMg = round1(xs.stream()
-                .mapToDouble(in -> decay(in.getMg(), in.getTakenAt(), now, half))
+                .mapToDouble(in -> decay(in.getCaffeine_mg(), in.getIntakeAt(), now, half))
                 .sum());
 
         // 남은 퍼센트 / 시간 / 수면 추정
-        double total = xs.stream().mapToDouble(Intake::getMg).sum();
+        double total = xs.stream().mapToDouble(Intake::getCaffeine_mg).sum();
         double percent = (total <= 0) ? 0 : round1(nowMg / total * 100.0);
 
         // 5mg 이하 최초 시간(현재 이후)을 zeroTime으로
@@ -182,11 +181,11 @@ public class AnalysisService {
     }
 
     // 사용자 특성 기반 반감기 보정(시간 단위)
-    private static double adjustedHalfLife(UserProfile u) {
+    private static double adjustedHalfLife(User u) {
         double half = 5.0;
-        if (Boolean.TRUE.equals(u.getSmoker())) half /= 1.5;
-        if (Boolean.TRUE.equals(u.getPregnant())) half *= 2.0;
-        if (Boolean.TRUE.equals(u.getMeds())) half *= 1.3;
+        if (Boolean.TRUE.equals(u.getSmoke())) half /= 1.5;
+        if (Boolean.TRUE.equals(u.getPregnancy())) half *= 2.0;
+        if (Boolean.TRUE.equals(u.getMedication())) half *= 1.3;
         return half;
     }
     // 반감기 기반 잔존량 계산: t < 섭취시각이면 0, 그 외  exp(-k*Δh)

@@ -2,5 +2,5 @@ package com.app.analysis;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserProfileRepository extends JpaRepository<UserProfile, String> {
+public interface UserRepository extends JpaRepository<User, String> {
 }

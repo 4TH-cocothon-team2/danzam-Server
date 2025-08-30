@@ -13,7 +13,6 @@ import org.json.JSONObject;
 
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,7 +50,7 @@ public class GptCalculatorService {
         }
         """;
 
-    public String computeByGpt(UserProfile user, List<Intake> intakes, LocalDate date) {
+    public String computeByGpt(User user, List<Intake> intakes, LocalDate date) {
         JSONObject payload = new JSONObject()
                 .put("model", MODEL)
                 .put("response_format", new JSONObject().put("type","json_object"))
@@ -83,18 +82,18 @@ public class GptCalculatorService {
         return (k != null && !k.isBlank()) ? k : dotenv.get("OPENAI_API_KEY");
     }
 
-    private static String buildUserContent(UserProfile u, List<Intake> xs, LocalDate date){
+    private static String buildUserContent(User u, List<Intake> xs, LocalDate date){
         JSONObject user = new JSONObject()
-                .put("weightKg", u.getWeightKg())
+                .put("weightKg", u.getWeight())
                 .put("age", u.getAge())
-                .put("smoker", Boolean.TRUE.equals(u.getSmoker()))
-                .put("pregnant", Boolean.TRUE.equals(u.getPregnant()))
-                .put("meds", Boolean.TRUE.equals(u.getMeds()));
+                .put("smoker", Boolean.TRUE.equals(u.getSmoke()))
+                .put("pregnant", Boolean.TRUE.equals(u.getPregnancy()))
+                .put("meds", Boolean.TRUE.equals(u.getMedication()));
 
         org.json.JSONArray intakes = new org.json.JSONArray();
         xs.forEach(in -> intakes.put(new JSONObject()
-                .put("mg", in.getMg())
-                .put("takenAt", in.getTakenAt().toString())
+                .put("mg", in.getCaffeine_mg())
+                .put("takenAt", in.getIntakeAt().toString())
         ));
 
         return new JSONObject()

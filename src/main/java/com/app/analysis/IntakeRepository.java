@@ -6,5 +6,5 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface IntakeRepository extends JpaRepository<Intake, Long> {
-    List<Intake> findByUserPkAndTakenAtBetween(String userPk, LocalDateTime start, LocalDateTime end);
+    List<Intake> findByUserAndIntakeAtBetween(User user, LocalDateTime start, LocalDateTime end);
 }

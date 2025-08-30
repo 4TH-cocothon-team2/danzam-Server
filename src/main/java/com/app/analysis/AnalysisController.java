@@ -19,10 +19,10 @@ public class AnalysisController {
 
     @GetMapping
     public AnalysisResponse getAnalysis(
-            @RequestParam String userPk,
+            @RequestParam String userId,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
     ) {
-        return analysisService.buildDailyAnalysis(date, userPk);
+        return analysisService.buildDailyAnalysis(date, userId);
     }
 }
