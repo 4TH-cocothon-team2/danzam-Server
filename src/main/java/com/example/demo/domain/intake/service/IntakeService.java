@@ -2,6 +2,7 @@ package com.example.demo.domain.intake.service;
 
 
 import com.example.demo.domain.intake.controller.IntakeController;
+import com.example.demo.domain.intake.dto.IntakeDto;
 import com.example.demo.domain.intake.dto.request.IntakeRequest;
 import com.example.demo.domain.intake.entity.IntakeRecord;
 import com.example.demo.domain.intake.repository.IntakeRepository;
@@ -12,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,5 +37,22 @@ public class IntakeService {
                 .build(); // builder를 마무리하는 build() 호출
 
         intakeRepository.save(intake);
+    }
+
+    @Transactional
+    public List<IntakeDto> getIntakeList() {
+        List<IntakeRecord> intakes = intakeRepository.findAll();
+
+        return intakes.stream()
+                .map(IntakeDto::new)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public IntakeDto getIntakeDetail(String intakeId) {
+        IntakeRecord intake = intakeRepository.findById(intakeId)
+                .orElseThrow(()-> new IllegalArgumentException("해당 id의 섭취 기록이 없습니다"));
+
+        return new IntakeDto(intake);
     }
 }
