@@ -1,8 +1,7 @@
 package com.example.demo.domain.intake.dto;
 
-import com.example.demo.domain.intake.entity.IntakeRecord;
+import com.example.demo.domain.intake.entity.Intake;
 
-import java.sql.Time;
 import java.time.LocalDateTime;
 
 public record IntakeDto (
@@ -14,14 +13,14 @@ public record IntakeDto (
         LocalDateTime intakeAt
 ){
     //IntakeRecord 엔티티를 IntakeDto로 변환하는 생성자
-    public IntakeDto (IntakeRecord intakeRecord) {
+    public IntakeDto (Intake intake) {
         this(
-                intakeRecord.getIntakeId(),
-                intakeRecord.getName(),
-                intakeRecord.getCount(),
-                intakeRecord.getCapacity(),
-                intakeRecord.getCaffeine_mg(),
-                intakeRecord.getIntakeAt()
+                intake.getIntakeId(),
+                intake.getName(),
+                intake.getCount(),
+                intake.getCapacity(),
+                intake.getCaffeine_mg(),
+                intake.getIntakeAt()
         );
     }
 }

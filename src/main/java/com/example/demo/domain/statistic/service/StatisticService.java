@@ -1,6 +1,6 @@
 package com.example.demo.domain.statistic.service;
 
-import com.example.demo.domain.intake.entity.IntakeRecord;
+import com.example.demo.domain.intake.entity.Intake;
 import com.example.demo.domain.intake.repository.IntakeRepository;
 import com.example.demo.domain.statistic.dto.StatisticResponse;
 import com.example.demo.domain.user.entity.User;
@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,11 +33,11 @@ public class StatisticService {
         LocalDateTime endOfToday = today.atTime(LocalTime.MAX);
 
         // 1. 오늘의 섭취 기록 조회
-        List<IntakeRecord> todayIntakes = intakeRepository.findByUserAndIntakeAtBetween(user, startOfToday, endOfToday);
+        List<Intake> todayIntakes = intakeRepository.findByUserAndIntakeAtBetween(user, startOfToday, endOfToday);
 
         //2. 일일 섭취량 계산
         int dailyIntake = todayIntakes.stream()
-                .mapToInt(IntakeRecord::getCaffeine_mg)
+                .mapToInt(Intake::getCaffeine_mg)
                 .sum();
         //3. 최종 음용 시간 계산
         LocalTime lastIntakeTime = todayIntakes.stream()
@@ -48,11 +47,11 @@ public class StatisticService {
 
         //4. 최근 7일간의 기록 조회
         LocalDateTime startOf7Days = today.minusDays(6).atStartOfDay();
-        List<IntakeRecord> last7DaysIntakes = intakeRepository.findByUserAndIntakeAtBetween(user, startOf7Days, endOfToday);
+        List<Intake> last7DaysIntakes = intakeRepository.findByUserAndIntakeAtBetween(user, startOf7Days, endOfToday);
 
         //5. 4번 합을 구해서 7로 나눈다 그럼 평균 계산됨
         int totalCaffeineLast7days = last7DaysIntakes.stream()
-                .mapToInt(IntakeRecord::getCaffeine_mg)
+                .mapToInt(Intake::getCaffeine_mg)
                 .sum();
         int avgIntake = totalCaffeineLast7days/7;
 
@@ -67,7 +66,7 @@ public class StatisticService {
         LocalDateTime endOfWeek = today.atTime(LocalTime.MAX);
 
         // 2. 이번 주 월요일부터 오늘까지의 모든 섭취 기록을 DB에서 가져옴
-        List<IntakeRecord> weeklyIntakes = intakeRepository.findByUserAndIntakeAtBetween(user, startOfWeek.atStartOfDay(), endOfWeek);
+        List<Intake> weeklyIntakes = intakeRepository.findByUserAndIntakeAtBetween(user, startOfWeek.atStartOfDay(), endOfWeek);
 
         // 3. 요일별 카페인 합계를 저장할 Map 생성 (모든 요일을 0으로 초기화)
         Map<DayOfWeek, Integer> dailyCaffeineMap = new java.util.LinkedHashMap<>();
@@ -76,7 +75,7 @@ public class StatisticService {
         }
 
         // 4. 가져온 기록들을 날짜별로 합산
-        for (IntakeRecord intake : weeklyIntakes) {
+        for (Intake intake : weeklyIntakes) {
             DayOfWeek dayOfWeek = intake.getIntakeAt().getDayOfWeek();
             int currentCaffeine = dailyCaffeineMap.get(dayOfWeek);
             dailyCaffeineMap.put(dayOfWeek, currentCaffeine + intake.getCaffeine_mg());

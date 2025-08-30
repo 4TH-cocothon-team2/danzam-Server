@@ -1,12 +1,9 @@
 package com.example.demo.domain.intake.entity;
 
 import com.example.demo.domain.user.entity.User;
-import com.example.demo.domain.user.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.sql.Date;
-import java.sql.Time;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class IntakeRecord {
+public class Intake {
 
     @Id
     @Column(name = "intake_id", nullable = false)
