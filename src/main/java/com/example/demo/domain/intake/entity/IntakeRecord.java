@@ -1,6 +1,7 @@
 package com.example.demo.domain.intake.entity;
 
 import com.example.demo.domain.user.entity.User;
+import com.example.demo.domain.user.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -37,4 +38,11 @@ public class IntakeRecord {
 
     private Date intake_date;
 
+    public void update(String name, Integer count, Integer capacity, Integer caffeine_mg,Time intake_time) {
+        this.name = name;
+        this.count = count;
+        this.capacity = capacity;
+        this.caffeine_mg = caffeine_mg;
+        this.intake_time = intake_time;
+    }
 }

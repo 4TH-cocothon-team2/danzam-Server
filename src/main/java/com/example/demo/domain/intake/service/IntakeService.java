@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,8 +42,15 @@ public class IntakeService {
     }
 
     @Transactional
-    public List<IntakeDto> getIntakeList() {
-        List<IntakeRecord> intakes = intakeRepository.findAll();
+    public List<IntakeDto> getIntakeList(String uuid) {
+        User user = findUserByUuid(uuid);
+
+        // 오늘 날짜의 섭취 기록만 조회
+        List<IntakeRecord> intakes = intakeRepository.findByUserAndIntakeAtBetween(
+                user,
+                LocalDate.now().atStartOfDay(), // 오늘 00:00:00
+                LocalDate.now().atTime(LocalTime.MAX) // 오늘 23:59:59
+        );
 
         return intakes.stream()
                 .map(IntakeDto::new)
@@ -49,10 +58,36 @@ public class IntakeService {
     }
 
     @Transactional
-    public IntakeDto getIntakeDetail(String intakeId) {
-        IntakeRecord intake = intakeRepository.findById(intakeId)
+    public IntakeDto getIntakeDetail(String uuid, String intakeId) {
+        User user = findUserByUuid(uuid);
+        IntakeRecord intake = intakeRepository.findByIntakeIdAndUser(intakeId, user)
                 .orElseThrow(()-> new IllegalArgumentException("해당 id의 섭취 기록이 없습니다"));
 
         return new IntakeDto(intake);
+    }
+
+    @Transactional
+    public void modIntake(String uuid, String intakeId, IntakeRequest request) {
+        User user = findUserByUuid(uuid);
+        IntakeRecord intake = intakeRepository.findByIntakeIdAndUser(intakeId, user)
+                .orElseThrow(()-> new IllegalArgumentException("해당 기록이 없습니다"));
+
+        intake.update(request.name(), request.count(), request.capacity(), request.caffeine_mg(), request.intake_time());
+    }
+
+    //삭제
+    @Transactional
+    public void deleteIntake(String uuid, String intakeId) {
+        User user = findUserByUuid(uuid);
+        // 섭취 기록 ID와 사용자 정보가 모두 일치하는 기록을 찾습니다.
+        IntakeRecord intake = intakeRepository.findByIntakeIdAndUser(intakeId, user)
+                .orElseThrow(() -> new IllegalArgumentException("기록을 찾을 수 없거나 삭제할 권한이 없습니다."));
+        intakeRepository.deleteById(intakeId);
+    }
+
+    //헬퍼 메서드!!!!!!!!!
+    private User findUserByUuid(String uuid) {
+        return userRepository.findById(uuid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
 }
