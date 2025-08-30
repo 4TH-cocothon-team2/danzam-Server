@@ -18,7 +18,7 @@ public class User {
 
     @Id
     @Column(name = "user_id", nullable = false)
-    private String user_id; // Flutter에서 생성한 UUID 저장
+    private String userId; // Flutter에서 생성한 UUID 저장
 
     private Integer age;
 
@@ -32,5 +32,13 @@ public class User {
 
     private Gender gender;
 
-    private Time sleep;
+
+    public void updateProfile(Gender gender, Integer age, Integer weight, boolean smoke, boolean pregnancy, boolean medication) {
+        this.gender = gender;
+        this.age = age;
+        this.weight = weight;
+        this.smoke = smoke;
+        this.pregnancy = pregnancy;
+        this.medication = medication;
+    }
 }
