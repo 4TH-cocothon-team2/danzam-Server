@@ -35,10 +35,7 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	implementation "org.springframework.ai:spring-ai-openai-spring-boot-starter"
-	implementation 'org.springframework.ai:spring-ai-openai'
 	implementation "org.springframework.boot:spring-boot-starter-webflux"
-	implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT")
 	implementation 'io.github.cdimascio:java-dotenv:5.2.2'
 	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 	implementation 'org.json:json:20231013'
