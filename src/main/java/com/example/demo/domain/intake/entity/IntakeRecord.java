@@ -1,5 +1,6 @@
 package com.example.demo.domain.intake.entity;
 
+import com.example.demo.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,7 +19,11 @@ public class IntakeRecord {
     @Id
     @Column(name = "intake_id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String intake_id;
+    private String intakeId;
+
+    @ManyToOne(fetch = FetchType.LAZY) // 2. User와의 관계 설정 (다대일)
+    @JoinColumn(name = "user_id", nullable = false) // DB에는 user_id 컬럼으로 저장됨
+    private User userId;
 
     private String name;
 
