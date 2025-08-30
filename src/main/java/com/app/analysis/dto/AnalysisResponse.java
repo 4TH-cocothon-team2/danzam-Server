@@ -9,8 +9,7 @@ public record AnalysisResponse (
     double remainingMg,
     double hoursToZero,
     LocalDateTime estimatedSleepTime,
-    List<Point> series,
-    String comment
+    List<Point> series
     ) {
     public record Point(LocalDateTime time, double mg) {}
 }

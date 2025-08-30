@@ -76,9 +76,8 @@ public class AnalysisService {
                 ));
             }
         }
-        String comment = o.optString("comment","");
 
-        return new AnalysisResponse(remainingPercent, remainingMg, hoursToZero, estimated, series, comment);
+        return new AnalysisResponse(remainingPercent, remainingMg, hoursToZero, estimated, series);
     }
 
     // --- 폴백 계산 ---
@@ -120,13 +119,14 @@ public class AnalysisService {
         // 현재/총 섭취 비율
         double percent = (total <= 0) ? 0 : (current / total * 100.0);
 
-        int score = estimateSleepScore(series);
-        String comment = (score >= 80) ? "오늘은 수면에 큰 영향이 없어요!"
-                : (score >= 50) ? "취침 전에 카페인 섭취를 조금 줄이면 더 좋아요." :
-                "카페인 잔존이 많아요. 내일은 양을 줄여보세요.";
 
-        return new AnalysisResponse(round1(percent), round1(current), round1(hoursToZero),
-                zeroTime, series, comment);
+        return new AnalysisResponse(
+                round1(percent),
+                round1(current),
+                round1(hoursToZero),
+                zeroTime,
+                series
+        );
     }
 
     // 사용자 특성 기반 반감기 보정(시간 단위)
@@ -148,11 +148,5 @@ public class AnalysisService {
     // 소수 1자리 반올림
     private static double round1(double v){ return Math.round(v*10)/10.0; }
 
-    private static int estimateSleepScore(List<AnalysisResponse.Point> series){
-        double avg = series.stream()
-                .filter(p -> {int h=p.time().getHour(); return (h>=22 || h<6);})
-                .mapToDouble(AnalysisResponse.Point::mg).average().orElse(0.0);
-        int s = (int)Math.max(0, 100-avg);
-        return Math.min(100, s);
-    }
+
 }

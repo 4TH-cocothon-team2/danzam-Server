@@ -47,7 +47,6 @@ public class GptCalculatorService {
           "hoursToZero": number,
           "estimatedSleepTime": "YYYY-MM-DDTHH:mm:ss",
           "series": [{"time":"YYYY-MM-DDTHH:mm:ss","mg":number}, ...],
-          "comment": "짧은 한국어 코멘트"
         }
         """;
 
