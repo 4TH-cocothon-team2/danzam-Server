@@ -24,16 +24,16 @@ public class User {
 
     private Integer weight;
 
-    private boolean smoke;
+    private Boolean smoke;
 
-    private boolean pregnancy;
+    private Boolean pregnancy;
 
-    private boolean medication;
+    private Boolean medication;
 
     private Gender gender;
 
 
-    public void updateProfile(Gender gender, Integer age, Integer weight, boolean smoke, boolean pregnancy, boolean medication) {
+    public void updateProfile(Gender gender, Integer age, Integer weight, Boolean smoke, Boolean pregnancy, Boolean medication) {
         this.gender = gender;
         this.age = age;
         this.weight = weight;

@@ -8,9 +8,9 @@ public record UserResponseDto (
         Gender gender,
         Integer age,
         Integer weight,
-        boolean smoke,
-        boolean pregnancy,
-        boolean medication
+        Boolean smoke,
+        Boolean pregnancy,
+        Boolean medication
 ){
     public static UserResponseDto from(User user) {
         return new UserResponseDto(
@@ -18,9 +18,9 @@ public record UserResponseDto (
                 user.getGender(),
                 user.getAge(),
                 user.getWeight(),
-                user.isSmoke(),
-                user.isPregnancy(),
-                user.isMedication()
+                user.getSmoke(),
+                user.getPregnancy(),
+                user.getMedication()
         );
     }
 }

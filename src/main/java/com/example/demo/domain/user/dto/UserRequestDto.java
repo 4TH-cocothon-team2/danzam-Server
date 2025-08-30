@@ -7,11 +7,11 @@ public record UserRequestDto (
 
         Integer weight,
 
-        boolean smoke,
+        Boolean smoke,
 
-        boolean pregnancy,
+        Boolean pregnancy,
 
-        boolean medication,
+        Boolean medication,
 
         Gender gender
 ){
