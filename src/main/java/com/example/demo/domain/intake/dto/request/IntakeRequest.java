@@ -1,6 +1,7 @@
 package com.example.demo.domain.intake.dto.request;
 
 import java.sql.Time;
+import java.time.LocalDateTime;
 
 public record IntakeRequest (
         String name,
@@ -10,6 +11,6 @@ public record IntakeRequest (
 
         Integer caffeine_mg,
 
-        Time intake_time
+        LocalDateTime intakeAt
 ){
 }

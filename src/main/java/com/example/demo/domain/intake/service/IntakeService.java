@@ -35,7 +35,7 @@ public class IntakeService {
                 .userId(user) // 어떤 사용자의 기록인지 연결
                 .name(request.name()) // DTO의 필드 이름을 확인하고 맞춰주세요
                 .caffeine_mg(request.caffeine_mg())
-                .intake_time(request.intake_time())
+                .intakeAt(request.intakeAt())
                 .build(); // builder를 마무리하는 build() 호출
 
         intakeRepository.save(intake);
@@ -72,7 +72,7 @@ public class IntakeService {
         IntakeRecord intake = intakeRepository.findByIntakeIdAndUser(intakeId, user)
                 .orElseThrow(()-> new IllegalArgumentException("해당 기록이 없습니다"));
 
-        intake.update(request.name(), request.count(), request.capacity(), request.caffeine_mg(), request.intake_time());
+        intake.update(request.name(), request.count(), request.capacity(), request.caffeine_mg(), request.intakeAt());
     }
 
     //삭제

@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "IntakeRecords")
@@ -34,15 +35,14 @@ public class IntakeRecord {
 
     private Integer caffeine_mg;
 
-    private Time intake_time;
 
-    private Date intake_date;
+    private LocalDateTime intakeAt;
 
-    public void update(String name, Integer count, Integer capacity, Integer caffeine_mg,Time intake_time) {
+    public void update(String name, Integer count, Integer capacity, Integer caffeine_mg,LocalDateTime intakeAt) {
         this.name = name;
         this.count = count;
         this.capacity = capacity;
         this.caffeine_mg = caffeine_mg;
-        this.intake_time = intake_time;
+        this.intakeAt = intakeAt;
     }
 }
