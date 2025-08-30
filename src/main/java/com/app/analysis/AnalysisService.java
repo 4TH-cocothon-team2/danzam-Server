@@ -9,9 +9,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * 메인 페이지 분석용 서비스
@@ -93,23 +91,23 @@ public class AnalysisService {
      */
 
     private static final int STEP_MINUTES = 10;   // 1, 5, 10 등 네가 원하는 간격
-    private static final double SLEEP_THRESHOLD = 5.0;
+    private static final double THRESHOLD_MG = 5.0;
 
     private AnalysisResponse fallbackLocalCalc(UserProfile u, List<Intake> xs, LocalDate date) {
         double half = adjustedHalfLife(u);
-
         LocalDateTime now = LocalDateTime.now();
+
         if (xs == null || xs.isEmpty()) {
             return new AnalysisResponse(0, 0, 0, now, List.of());
         }
 
-        // 1) 시리즈 시작: 마지막 섭취 시각
-        LocalDateTime lastIntake = xs.stream()
+        // ✅ '현재 이전(<= now)' 중 가장 늦은 섭취시각을 시리즈 시작으로
+        Optional<LocalDateTime> lastPastIntakeOpt = xs.stream()
                 .map(Intake::getTakenAt)
-                .max(Comparator.naturalOrder())
-                .orElse(date.atStartOfDay());
+                .filter(t -> !t.isAfter(now))           // now 이전(같음 포함)만
+                .max(Comparator.naturalOrder());
 
-        LocalDateTime from = lastIntake;
+        LocalDateTime from = lastPastIntakeOpt.orElse(now);
         // 2) 과도한 길이 방지(최대 48시간)
         LocalDateTime hardEnd = from.plusHours(48);
 
@@ -124,29 +122,61 @@ public class AnalysisService {
         }
 
 
-        // 4) "지금(now)" 잔존량은 연속식으로 직접 계산(표본점 의존 X)
-        double current = round1(xs.stream()
+        // now 시점 값 계산
+        double nowMg = round1(xs.stream()
                 .mapToDouble(in -> decay(in.getMg(), in.getTakenAt(), now, half))
                 .sum());
 
-        // 5) 현재 이후에서 처음 임계치 이하가 되는 시점
-        LocalDateTime estimated = (current <= SLEEP_THRESHOLD) ? now :
-                series.stream()
-                        .filter(p -> !p.time().isBefore(now))
-                        .filter(p -> p.mg() <= SLEEP_THRESHOLD)
+        // 남은 퍼센트 / 시간 / 수면 추정
+        double total = xs.stream().mapToDouble(Intake::getMg).sum();
+        double percent = (total <= 0) ? 0 : round1(nowMg / total * 100.0);
+
+        // 5mg 이하 최초 시간(현재 이후)을 zeroTime으로
+        LocalDateTime zeroTime = (nowMg <= THRESHOLD_MG) ? now
+                : series.stream()
+                        .filter(p -> !p.time().isBefore(now)) // now 이후만
+                        .filter(p -> p.mg() <= THRESHOLD_MG)
                         .map(AnalysisResponse.Point::time)
                         .findFirst()
                         .orElse(hardEnd);
 
-        double hoursToZero = Math.max(0, Duration.between(now, estimated).toMinutes() / 60.0);
-        double total = xs.stream().mapToDouble(Intake::getMg).sum();
-        double percent = (total <= 0) ? 0 : (current / total * 100.0);
+        double hoursToZero = Math.max(0, Duration.between(now, zeroTime).toMinutes() / 60.0);
 
+        // --- ① tail 자르기: zeroTime(또는 최초 5mg 이하) 이후는 버림 ---
+        int cutIdx = -1;
+        for (int i = 0; i < series.size(); i++) {
+            // now 이후 구간에서 처음으로 5mg 이하가 되는 지점
+            if (!series.get(i).time().isBefore(now) && series.get(i).mg() <= THRESHOLD_MG) {
+                cutIdx = i; break;
+            }
+        }
+        if (cutIdx >= 0 && cutIdx + 1 < series.size()) {
+            series = new ArrayList<>(series.subList(0, cutIdx + 1));
+        }
+
+        // --- ② now 포인트 삽입(시간 순서 유지) ---
+        // 10분 격자와 now가 정확히 일치하지 않으면, 시리즈 안의 올바른 위치에 삽입/치환
+        int pos = Collections.binarySearch(
+                series,
+                new AnalysisResponse.Point(now, 0),
+                Comparator.comparing(AnalysisResponse.Point::time)
+        );
+        if (pos >= 0) {
+            // 동일 시각 격자점이 있다면 값을 nowMg로 갱신
+            series.set(pos, new AnalysisResponse.Point(now, nowMg));
+        } else {
+            int insertAt = -pos - 1;
+            insertAt = Math.max(0, Math.min(insertAt, series.size()));
+            // 시간 순서 유지하며 삽입 (라인 차트가 뒤로 꺾이지 않도록)
+            series.add(insertAt, new AnalysisResponse.Point(now, nowMg));
+        }
+
+        // 응답
         return new AnalysisResponse(
-                round1(percent),
-                current,
-                round1(hoursToZero),
-                estimated,
+                percent,
+                nowMg,
+                hoursToZero,
+                zeroTime,
                 series
         );
     }
