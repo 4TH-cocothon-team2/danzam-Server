@@ -39,6 +39,7 @@ dependencies {
 	implementation 'org.springframework.ai:spring-ai-openai'
 	implementation "org.springframework.boot:spring-boot-starter-webflux"
 	implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT")
+	implementation 'io.github.cdimascio:java-dotenv:5.2.2'
 }
 
 tasks.named('test') {
