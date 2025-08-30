@@ -45,7 +45,7 @@ public class GptCalculatorService {
           "remainingMg": number,
           "remainingPercent": number,
           "hoursToZero": number,
-          "estimatedSleepTime": "YYYY-MM-DDTHH:mm:ss",
+          "estimatedSleepTime": "YYYY-MM-DDTHH:mm",
           "series": [{"time":"YYYY-MM-DDTHH:mm:ss","mg":number}, ...],
         }
         """;

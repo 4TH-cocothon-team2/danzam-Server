@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -89,42 +91,62 @@ public class AnalysisService {
      *  - 총 섭취 대비 현재 비율(remainingPercent)
      *  - 간단 점수 기반 코멘트(comment)
      */
+
+    private static final int STEP_MINUTES = 10;   // 1, 5, 10 등 네가 원하는 간격
+    private static final double SLEEP_THRESHOLD = 5.0;
+
     private AnalysisResponse fallbackLocalCalc(UserProfile u, List<Intake> xs, LocalDate date) {
-        double half = adjustedHalfLife(u);           // 보정 반감기
-        LocalDateTime start = date.atStartOfDay();
-        LocalDateTime end = date.plusDays(1).atStartOfDay().plusHours(6); // 새벽 6시까지 확장
+        double half = adjustedHalfLife(u);
 
+        LocalDateTime now = LocalDateTime.now();
+        if (xs == null || xs.isEmpty()) {
+            return new AnalysisResponse(0, 0, 0, now, List.of());
+        }
+
+        // 1) 시리즈 시작: 마지막 섭취 시각
+        LocalDateTime lastIntake = xs.stream()
+                .map(Intake::getTakenAt)
+                .max(Comparator.naturalOrder())
+                .orElse(date.atStartOfDay());
+
+        LocalDateTime from = lastIntake;
+        // 2) 과도한 길이 방지(최대 48시간)
+        LocalDateTime hardEnd = from.plusHours(48);
+
+        // 3) 시리즈 생성 (마지막 섭취 시각부터!)
         List<AnalysisResponse.Point> series = new ArrayList<>();
-        double total = xs.stream().mapToDouble(Intake::getMg).sum(); // 오늘 총 섭취 mg
-
-        // 30분 간격 시뮬레이션: mg(t) = Σ dose_i * exp(-k * Δh),  k = ln(2)/half
-        for (LocalDateTime t=start; !t.isAfter(end); t=t.plusMinutes(30)) {
+        for (LocalDateTime t = from; !t.isAfter(hardEnd); t = t.plusMinutes(STEP_MINUTES)) {
             double mg = 0.0;
-            for (Intake in: xs) mg += decay(in.getMg(), in.getTakenAt(), t, half);
+            for (Intake in : xs) {
+                mg += decay(in.getMg(), in.getTakenAt(), t, half);
+            }
             series.add(new AnalysisResponse.Point(t, round1(mg)));
         }
 
-        //현재 시점 잔존량
-        LocalDateTime now = LocalDateTime.now();
-        double current = series.stream().filter(p -> !p.time().isAfter(now))
-                .reduce((a,b)->b).map(AnalysisResponse.Point::mg).orElse(0.0);
 
-        // 5mg 이하 최초 시간을 잔존 0으로 간주
-        LocalDateTime zeroTime = series.stream()
-                .filter(p -> p.mg() <= 5.0)
-                .map(AnalysisResponse.Point::time)
-                .findFirst().orElse(end);
-        //남은 시간
-        double hoursToZero = Duration.between(now, zeroTime).toMinutes()/60.0;
-        // 현재/총 섭취 비율
+        // 4) "지금(now)" 잔존량은 연속식으로 직접 계산(표본점 의존 X)
+        double current = round1(xs.stream()
+                .mapToDouble(in -> decay(in.getMg(), in.getTakenAt(), now, half))
+                .sum());
+
+        // 5) 현재 이후에서 처음 임계치 이하가 되는 시점
+        LocalDateTime estimated = (current <= SLEEP_THRESHOLD) ? now :
+                series.stream()
+                        .filter(p -> !p.time().isBefore(now))
+                        .filter(p -> p.mg() <= SLEEP_THRESHOLD)
+                        .map(AnalysisResponse.Point::time)
+                        .findFirst()
+                        .orElse(hardEnd);
+
+        double hoursToZero = Math.max(0, Duration.between(now, estimated).toMinutes() / 60.0);
+        double total = xs.stream().mapToDouble(Intake::getMg).sum();
         double percent = (total <= 0) ? 0 : (current / total * 100.0);
-
 
         return new AnalysisResponse(
                 round1(percent),
-                round1(current),
+                current,
                 round1(hoursToZero),
-                zeroTime,
+                estimated,
                 series
         );
     }
