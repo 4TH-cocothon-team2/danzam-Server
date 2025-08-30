@@ -1,6 +1,7 @@
 package com.example.demo.domain.user.controller;
 
 import com.example.demo.domain.user.dto.UserRequestDto;
+import com.example.demo.domain.user.dto.UserResponseDto;
 import com.example.demo.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,15 @@ public class UserController {
     ) {
         userService.updateProfile(uuid, requestDto);
         return ResponseEntity.ok().build(); // '성공'을 의미하는 200 상태 코드 반환
+    }
+
+    //조회
+    @GetMapping
+    public ResponseEntity<UserResponseDto> getUserProfile(
+            @RequestAttribute("guestUuid") String uuid
+    ) {
+        UserResponseDto userProfile = userService.getProfile(uuid);
+        return ResponseEntity.ok(userProfile);
     }
 
 

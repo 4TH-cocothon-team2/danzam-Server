@@ -2,6 +2,7 @@ package com.example.demo.domain.user.service;
 
 
 import com.example.demo.domain.user.dto.UserRequestDto;
+import com.example.demo.domain.user.dto.UserResponseDto;
 import com.example.demo.domain.user.entity.User;
 import com.example.demo.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,16 @@ public class UserService {
                 requestDto.pregnancy(),
                 requestDto.medication()
         );
+    }
+
+    @Transactional(readOnly = true) // 데이터 조회만 하므로 readOnly = true 설정
+    public UserResponseDto getProfile(String uuid) {
+        // UUID로 사용자를 찾음. 없으면 에러 발생
+        User user = userRepository.findById(uuid)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 찾은 User 엔티티를 Response DTO로 변환하여 반환
+        return UserResponseDto.from(user);
     }
 
 }
