@@ -17,29 +17,29 @@ public class UserController {
     // 1. 사용자 정보 최초 입력 (POST /api/users)
     @PostMapping
     public ResponseEntity<Void> createUserProfile(
-            @RequestAttribute("guestUuid") String uuid,
+            @RequestHeader("X-User-Id") String userId,
             @RequestBody UserRequestDto requestDto
     ) {
-        userService.createProfile(uuid, requestDto);
+        userService.createProfile(userId, requestDto);
         return ResponseEntity.status(HttpStatus.CREATED).build(); // '생성됨'을 의미하는 201 상태 코드 반환
     }
 
     // 2. 사용자 정보 수정 (PATCH /api/users)
     @PatchMapping
     public ResponseEntity<Void> updateUserProfile(
-            @RequestAttribute("guestUuid") String uuid,
+            @RequestHeader("X-User-Id") String userId,
             @RequestBody UserRequestDto requestDto
     ) {
-        userService.updateProfile(uuid, requestDto);
+        userService.updateProfile(userId, requestDto);
         return ResponseEntity.ok().build(); // '성공'을 의미하는 200 상태 코드 반환
     }
 
     //조회
     @GetMapping
     public ResponseEntity<UserResponseDto> getUserProfile(
-            @RequestAttribute("guestUuid") String uuid
+            @RequestHeader("X-User-Id") String userId
     ) {
-        UserResponseDto userProfile = userService.getProfile(uuid);
+        UserResponseDto userProfile = userService.getProfile(userId);
         return ResponseEntity.ok(userProfile);
     }
 

@@ -25,8 +25,8 @@ public class StatisticService {
     private final UserRepository userRepository;
     private final IntakeRepository intakeRepository;
 
-    public StatisticResponse getMyStatistics(String uuid) {
-        User user = userRepository.findById(uuid)
+    public StatisticResponse getMyStatistics(String userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
         LocalDate today = LocalDate.now();
         LocalDateTime startOfToday = today.atStartOfDay();

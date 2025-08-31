@@ -34,24 +34,24 @@ public class IntakeController {
     }
     //상세 조회
     @GetMapping("/{intakeId}")
-    public ResponseEntity<IntakeDto> getIntakeDetail(@RequestAttribute("guestUuid") String uuid, @PathVariable Long intakeId) {
-        IntakeDto intakeDetail = intakeService.getIntakeDetail(uuid, intakeId);
+    public ResponseEntity<IntakeDto> getIntakeDetail(@RequestHeader("X-User-Id") String userId, @PathVariable Long intakeId) {
+        IntakeDto intakeDetail = intakeService.getIntakeDetail(userId, intakeId);
 
         return ResponseEntity.ok(intakeDetail);
     }
 
     //기록 수정
     @PatchMapping("/{intakeId}")
-    public ResponseEntity<Void> modIntake(@RequestAttribute("guestUuid") String uuid, @RequestBody IntakeRequest request, @PathVariable Long intakeId) {
-        intakeService.modIntake(uuid, intakeId, request);
+    public ResponseEntity<Void> modIntake(@RequestHeader("X-User-Id") String userId, @RequestBody IntakeRequest request, @PathVariable Long intakeId) {
+        intakeService.modIntake(userId, intakeId, request);
         return ResponseEntity.ok().build();
     }
 
     //삭제
     @DeleteMapping("/{intakeId}")
-    public ResponseEntity<Void> deleteIntake(@RequestAttribute("guestUuid") String uuid,
+    public ResponseEntity<Void> deleteIntake(@RequestHeader("X-User-Id") String userId,
                                              @PathVariable Long intakeId) {
-        intakeService.deleteIntake(uuid, intakeId);
+        intakeService.deleteIntake(userId, intakeId);
         return ResponseEntity.noContent().build();
     }
 

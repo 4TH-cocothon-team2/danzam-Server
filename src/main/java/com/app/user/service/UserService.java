@@ -15,14 +15,14 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void createProfile(String uuid, UserRequestDto requestDto) {
+    public void createProfile(String userId, UserRequestDto requestDto) {
         //이미 해당 UUID로 등록된 유저가 있는지 확인
-        if (userRepository.existsById(uuid)) {
+        if (userRepository.existsById(userId)) {
             throw new IllegalArgumentException("이미 등록된 사용자입니다.");
         }
 
         User newUser = User.builder()
-                .userId(uuid)
+                .userId(userId)
                 .gender(requestDto.gender())
                 .age(requestDto.age())
                 .weight(requestDto.weight())
@@ -34,8 +34,8 @@ public class UserService {
     }
 
     @Transactional
-    public void updateProfile(String uuid, UserRequestDto requestDto) {
-        User existingUser = userRepository.findById(uuid)
+    public void updateProfile(String userId, UserRequestDto requestDto) {
+        User existingUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없음"));
 
         //Entity의 update 메서드를 호출하여 정보 수정
@@ -50,9 +50,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true) // 데이터 조회만 하므로 readOnly = true 설정
-    public UserResponseDto getProfile(String uuid) {
+    public UserResponseDto getProfile(String userId) {
         // UUID로 사용자를 찾음. 없으면 에러 발생
-        User user = userRepository.findById(uuid)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         // 찾은 User 엔티티를 Response DTO로 변환하여 반환
