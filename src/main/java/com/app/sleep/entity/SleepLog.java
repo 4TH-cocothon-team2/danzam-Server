@@ -1,6 +1,7 @@
 package com.app.sleep.entity;
 
-import com.app.analysis.User;
+
+import com.app.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 

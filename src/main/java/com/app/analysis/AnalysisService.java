@@ -1,6 +1,10 @@
 package com.app.analysis;
 
 import com.app.analysis.dto.AnalysisResponse;
+import com.app.intake.entity.Intake;
+import com.app.intake.repository.IntakeRepository;
+import com.app.user.entity.User;
+import com.app.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;

@@ -1,5 +1,7 @@
 package com.app.analysis;
 
+import com.app.intake.entity.Intake;
+import com.app.user.entity.User;
 import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
 
