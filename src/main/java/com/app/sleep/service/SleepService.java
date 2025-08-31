@@ -1,9 +1,8 @@
 package com.app.sleep.service;
 
 
-import com.app.analysis.Intake;
-import com.app.analysis.User;
-import com.app.analysis.UserRepository;
+import com.app.intake.entity.Intake;
+import com.app.intake.repository.IntakeRepository;
 import com.app.sleep.dto.SleepLogRequest;
 import com.app.sleep.dto.SleepPageSummaryResponse;
 import com.app.sleep.dto.SleepQualityRequest;
@@ -11,6 +10,8 @@ import com.app.sleep.entity.SleepLog;
 import com.app.sleep.entity.SleepQuality;
 import com.app.sleep.repository.SleepLogRepository;
 import com.app.sleep.repository.SleepQualityRepository;
+import com.app.user.entity.User;
+import com.app.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,7 +63,7 @@ public class SleepService {
     }
 
     // ====== 페이지 요약 ======
-    @Transactional(readOnly = true)
+    @Transactional
     public SleepPageSummaryResponse getSummary(String userId, LocalDate targetDate, Double thresholdMgOrNull) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
@@ -142,7 +144,7 @@ public class SleepService {
 
         int total = list.stream()
                 // 필드명이 caffeine_mg이면 getCaffeine_mg()
-                .mapToInt(Intake::getCaffeineMg)
+                .mapToInt(Intake::getCaffeine_mg)
                 .sum();
 
         LocalDateTime last = list.stream()
@@ -155,4 +157,4 @@ public class SleepService {
 
     private record DaySum(int totalMg, LocalDateTime lastIntakeAt) {}
 }
-}
+
