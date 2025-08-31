@@ -28,7 +28,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/**").permitAll() // /api/로 시작하는 모든 요청을 허용
-                        .anyRequest().authenticated() // 그 외의 모든 요청은 인증 필요 (옵션)
+                        .anyRequest().permitAll() // 그 외의 모든 요청은 인증 필요 (옵션)
                 );
 
         return http.build();
