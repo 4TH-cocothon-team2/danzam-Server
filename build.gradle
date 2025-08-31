@@ -39,6 +39,7 @@ dependencies {
 	implementation 'io.github.cdimascio:java-dotenv:5.2.2'
 	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 	implementation 'org.json:json:20231013'
+	runtimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {
